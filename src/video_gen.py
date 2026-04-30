@@ -41,6 +41,7 @@ def build_ltxv_workflow(
     ckpt = models["ltxv_checkpoint"]
     te = models["ltxv_text_encoder"]
     lora = models["ltxv_lora"]
+    upscaler = models["ltxv_upscaler"]
 
     # Model/encoder nodes
     wf["1"]["inputs"]["ckpt_name"] = ckpt
@@ -48,6 +49,7 @@ def build_ltxv_workflow(
     wf["2"]["inputs"]["ckpt_name"] = ckpt
     wf["10"]["inputs"]["ckpt_name"] = ckpt
     wf["22"]["inputs"]["lora_name"] = lora
+    wf["23"]["inputs"]["model_name"] = upscaler
 
     # Prompts
     wf["3"]["inputs"]["text"] = prompt
@@ -55,18 +57,22 @@ def build_ltxv_workflow(
     # Image
     wf["6"]["inputs"]["image"] = uploaded_image_name
 
-    # Latent dimensions
-    wf["8"]["inputs"]["width"] = w
-    wf["8"]["inputs"]["height"] = h
+    # Low-res latent (half of target resolution)
+    wf["8"]["inputs"]["width"] = w // 2
+    wf["8"]["inputs"]["height"] = h // 2
     wf["8"]["inputs"]["length"] = length
 
     # Audio latent length must match
     wf["11"]["inputs"]["frames_number"] = length
     wf["11"]["inputs"]["frame_rate"] = fps
 
-    # Sampling
+    # Low-res sampling
     wf["13"]["inputs"]["cfg"] = cfg_val
     wf["14"]["inputs"]["noise_seed"] = seed
+
+    # High-res sampling (refine pass uses seed+1)
+    wf["27"]["inputs"]["cfg"] = cfg_val
+    wf["28"]["inputs"]["noise_seed"] = seed + 1
 
     # Output prefix
     wf["21"]["inputs"]["filename_prefix"] = output_prefix

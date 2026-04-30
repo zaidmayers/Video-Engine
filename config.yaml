@@ -10,6 +10,7 @@ models:
   ltxv_checkpoint: "ltx-2.3-22b-dev-fp8.safetensors"
   ltxv_text_encoder: "gemma_3_12B_it_fp4_mixed.safetensors"
   ltxv_lora: "ltx-2.3-22b-distilled-lora-384.safetensors"
+  ltxv_upscaler: "ltx-2.3-spatial-upscaler-x2-1.1.safetensors"
   flux_unet: "flux1-schnell-fp8.safetensors"
   flux_t5: "t5xxl_fp8_e4m3fn.safetensors"
   flux_clip: "clip_l.safetensors"
@@ -24,7 +25,7 @@ video:
   width: 768
   height: 512
   fps: 25
-  duration_seconds: 5    # per scene — 121 frames (9+14*8); increase once gen speed is confirmed
+  duration_seconds: 8    # per scene — low-res 384x256, upscaled to 768x512
   cfg: 1.0
   steps: 9               # ManualSigmas distilled steps
   seed: 42

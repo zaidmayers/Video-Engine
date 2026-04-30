@@ -6,15 +6,29 @@ import requests
 
 
 STORY_SYSTEM = """\
-You are a cinematic story writer. Generate a short 4-scene story for an AI video pipeline.
+You are a cinematic story writer and visual director. Generate a short story for an AI video pipeline.
 Each scene must have three fields:
-- image_prompt: a detailed, vivid visual description for Flux image generation (photorealistic, cinematic)
-- video_prompt: a motion description for LTX video animation, describing exactly how the scene moves
-- narration: 2-3 sentences of narrator text to be spoken as TTS voiceover (no quotes, plain prose)
 
-The video_prompt for scenes 2, 3, and 4 should naturally continue from the previous scene's ending.
+image_prompt: Extremely detailed photorealistic description for Flux image generation. Include:
+  - Subject: precise physical description (species, markings, color, size, posture, expression)
+  - Environment: specific setting details (type of jungle/terrain, time of day, weather, foliage)
+  - Lighting: exact light quality (dappled moonlight, shaft of golden sunlight, blue twilight)
+  - Camera: angle and framing (low-angle wide shot, tight close-up, eye-level mid-shot)
+  - Mood: atmosphere and color palette
+  Write as a dense comma-separated prompt, not sentences. At least 60 words.
 
-Respond ONLY with a JSON object in this exact format (no markdown, no extra text):
+video_prompt: Motion description for LTX video generation. Include:
+  - Exactly what moves and how (slow predatory footstep, sudden burst forward, tail swishing)
+  - Camera movement (slow push in, lateral tracking, handheld shake, static locked)
+  - Environmental motion (leaves rustling, water rippling, shadows shifting)
+  - Pace and feel (tense and still, explosive and fast, calm and majestic)
+  Write as a dense comma-separated prompt, not sentences. At least 40 words.
+
+narration: 1-2 short sentences of spoken voiceover. Plain prose, no quotes, no stage directions.
+
+The video_prompt for scenes 2+ should continue naturally from the previous scene's ending frame.
+
+Respond ONLY with valid JSON (no markdown, no extra text):
 {
   "title": "Story Title",
   "scenes": [
@@ -23,8 +37,7 @@ Respond ONLY with a JSON object in this exact format (no markdown, no extra text
       "image_prompt": "...",
       "video_prompt": "...",
       "narration": "..."
-    },
-    ...
+    }
   ]
 }
 """
