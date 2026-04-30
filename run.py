@@ -13,6 +13,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -25,6 +26,33 @@ import yaml
 def load_config(path: str = "config.yaml") -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
+
+
+def resolve_run_dir(base_output: str, story_file: str | None) -> str:
+    """Return the run directory to use for this invocation.
+
+    If story_file lives inside an existing runXX folder, resume that run.
+    Otherwise create the next runXX folder.
+    """
+    os.makedirs(base_output, exist_ok=True)
+    if story_file:
+        abs_story = os.path.abspath(story_file)
+        abs_base = os.path.abspath(base_output)
+        rel = os.path.relpath(abs_story, abs_base)
+        parts = rel.split(os.sep)
+        if len(parts) >= 2 and re.match(r"^run\d+$", parts[0]):
+            run_dir = os.path.join(base_output, parts[0])
+            print(f"  Resuming {parts[0]}/")
+            return run_dir
+
+    existing = [
+        d for d in os.listdir(base_output)
+        if os.path.isdir(os.path.join(base_output, d)) and re.match(r"^run\d+$", d)
+    ]
+    nums = [int(re.search(r"\d+", d).group()) for d in existing] if existing else [0]
+    run_dir = os.path.join(base_output, f"run{max(nums) + 1:02d}")
+    os.makedirs(run_dir, exist_ok=True)
+    return run_dir
 
 
 def ensure_comfyui_running(cfg: dict) -> "ComfyClient":
@@ -191,11 +219,13 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config(args.config)
-    os.makedirs(cfg["output_dir"], exist_ok=True)
+    run_dir = resolve_run_dir(cfg["output_dir"], args.story_file)
+    cfg["output_dir"] = run_dir
 
     t0 = time.time()
     print("=" * 60)
     print("  VIDEO ENGINE — AI Automated Story Video Pipeline")
+    print(f"  Run folder: {run_dir}")
     print("=" * 60)
 
     # ── Stage 1: Story ──────────────────────────────────────────────

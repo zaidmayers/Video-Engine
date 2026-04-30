@@ -32,8 +32,8 @@ def concatenate_videos(video_paths: list[str], out_path: str) -> str:
     """Concatenate a list of videos (must share codec/resolution) via FFmpeg concat demuxer."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as f:
         for p in video_paths:
-            # Use forward slashes inside the file list to avoid Windows path issues
-            f.write(f"file '{p.replace(chr(92), '/')}'\n")
+            abs_p = os.path.abspath(p).replace("\\", "/")
+            f.write(f"file '{abs_p}'\n")
         list_path = f.name
 
     cmd = [
