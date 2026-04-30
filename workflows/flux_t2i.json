@@ -1,0 +1,93 @@
+{
+  "1": {
+    "inputs": {
+      "unet_name": "__FLUX_UNET__",
+      "weight_dtype": "fp8_e4m3fn"
+    },
+    "class_type": "UNETLoader"
+  },
+  "2": {
+    "inputs": {
+      "clip_name1": "__FLUX_T5__",
+      "clip_name2": "__FLUX_CLIP__",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader"
+  },
+  "3": {
+    "inputs": {
+      "vae_name": "__FLUX_VAE__"
+    },
+    "class_type": "VAELoader"
+  },
+  "4": {
+    "inputs": {
+      "clip_l": "__PROMPT__",
+      "t5xxl": "__PROMPT__",
+      "guidance": 3.5,
+      "clip": ["2", 0]
+    },
+    "class_type": "CLIPTextEncodeFlux"
+  },
+  "5": {
+    "inputs": {
+      "width": 768,
+      "height": 512,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage"
+  },
+  "6": {
+    "inputs": {
+      "noise_seed": 42
+    },
+    "class_type": "RandomNoise"
+  },
+  "7": {
+    "inputs": {
+      "model": ["1", 0],
+      "conditioning": ["4", 0]
+    },
+    "class_type": "BasicGuider"
+  },
+  "8": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect"
+  },
+  "9": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 4,
+      "model": ["1", 0],
+      "denoise": 1.0
+    },
+    "class_type": "BasicScheduler"
+  },
+  "10": {
+    "inputs": {
+      "noise": ["6", 0],
+      "guider": ["7", 0],
+      "sampler": ["8", 0],
+      "sigmas": ["9", 0],
+      "latent_image": ["5", 0]
+    },
+    "class_type": "SamplerCustomAdvanced"
+  },
+  "11": {
+    "inputs": {
+      "samples": ["10", 0],
+      "vae": ["3", 0]
+    },
+    "class_type": "VAEDecode"
+  },
+  "12": {
+    "inputs": {
+      "images": ["11", 0],
+      "filename_prefix": "__OUTPUT_PREFIX__"
+    },
+    "class_type": "SaveImage"
+  }
+}

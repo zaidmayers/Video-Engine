@@ -1,0 +1,47 @@
+comfyui:
+  host: "127.0.0.1"
+  port: 8000
+  base_dir: "C:/Users/Zaid/Videos/Comfy Editor"
+  venv_python: "C:/Users/Zaid/Videos/Comfy Editor/.venv/Scripts/python.exe"
+  main_py: "C:/Users/Zaid/AppData/Local/Programs/ComfyUI/resources/ComfyUI/main.py"
+  extra_model_paths: "C:/Users/Zaid/AppData/Roaming/ComfyUI/extra_models_config.yaml"
+
+models:
+  ltxv_checkpoint: "ltx-2.3-22b-dev-fp8.safetensors"
+  ltxv_text_encoder: "gemma_3_12B_it_fp4_mixed.safetensors"
+  ltxv_lora: "ltx-2.3-22b-distilled-lora-384.safetensors"
+  flux_unet: "flux1-schnell-fp8.safetensors"
+  flux_t5: "t5xxl_fp8_e4m3fn.safetensors"
+  flux_clip: "clip_l.safetensors"
+  flux_vae: "ae.safetensors"
+
+story:
+  ollama_model: "qwen2.5:7b"
+  ollama_host: "http://localhost:11434"
+  num_scenes: 4
+
+video:
+  width: 768
+  height: 512
+  fps: 25
+  duration_seconds: 5    # per scene — 121 frames (9+14*8); increase once gen speed is confirmed
+  cfg: 1.0
+  steps: 9               # ManualSigmas distilled steps
+  seed: 42
+
+image:
+  width: 768
+  height: 512
+  steps: 4
+  guidance: 3.5
+  seed: 42
+
+tts:
+  voice: "af_heart"
+  speed: 1.0
+  lang: "a"             # 'a' = American English
+
+whisper:
+  model: "base"
+
+output_dir: "output"
