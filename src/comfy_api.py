@@ -64,13 +64,34 @@ class ComfyClient:
             raise ComfyAPIError(f"Workflow error: {data['error']}\nDetails: {data.get('node_errors', {})}")
         return data["prompt_id"]
 
-    def wait_for_prompt(self, prompt_id: str, timeout: int = 1800, poll_interval: int = 5) -> dict:
-        """Poll until the prompt completes. Returns the history entry."""
+    def wait_for_prompt(self, prompt_id: str, timeout: int = 3600, poll_interval: int = 5) -> dict:
+        """Poll until the prompt completes. Handles ComfyUI disconnects with automatic reconnect."""
         deadline = time.time() + timeout
         print(f"  Generating [prompt={prompt_id[:8]}]", end="", flush=True)
+        down_since = None
+
         while time.time() < deadline:
-            r = requests.get(f"{self.base_url}/history/{prompt_id}")
-            r.raise_for_status()
+            try:
+                r = requests.get(f"{self.base_url}/history/{prompt_id}", timeout=10)
+                r.raise_for_status()
+            except (requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.HTTPError):
+                if down_since is None:
+                    down_since = time.time()
+                    print(f"\n  [!] ComfyUI connection lost — waiting for restart...", flush=True)
+                elif time.time() - down_since > 300:
+                    raise ComfyAPIError(
+                        "ComfyUI has been unreachable for 5+ minutes. "
+                        "It likely crashed (OOM). Restart ComfyUI and re-run with --skip-images."
+                    )
+                time.sleep(15)
+                continue
+
+            if down_since is not None:
+                print(f"  [OK] ComfyUI reconnected. Continuing...", flush=True)
+                down_since = None
+
             history = r.json()
             if prompt_id in history:
                 entry = history[prompt_id]
@@ -81,8 +102,10 @@ class ComfyClient:
                 if status.get("status_str") == "error":
                     msgs = [m for m in status.get("messages", []) if m[0] == "execution_error"]
                     raise ComfyAPIError(f"Execution error: {msgs}")
+
             time.sleep(poll_interval)
             print(".", end="", flush=True)
+
         raise ComfyAPIError(f"Prompt {prompt_id} timed out after {timeout}s")
 
     def get_output_files(self, history_entry: dict) -> list[dict]:

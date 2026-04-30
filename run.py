@@ -144,6 +144,7 @@ def stage_images(comfy, cfg: dict, story: dict) -> list[str]:
 
 def stage_videos(comfy, cfg: dict, story: dict, image_paths: list[str]) -> list[str]:
     print("\n=== Stage 3: LTX Video Generation ===")
+    from src.comfy_api import ComfyAPIError
     from src.video_gen import generate_video, extract_last_frame
     video_paths = []
     output_dir = cfg["output_dir"]
@@ -166,7 +167,15 @@ def stage_videos(comfy, cfg: dict, story: dict, image_paths: list[str]) -> list[
         if os.path.exists(video_dest):
             print(f"  [LTX] Scene {n}: cached at {video_dest}")
         else:
-            generate_video(comfy, cfg, source_image, scene["video_prompt"], video_dest, n)
+            # Re-establish ComfyUI connection before each scene in case it restarted
+            comfy = ensure_comfyui_running(cfg)
+            try:
+                generate_video(comfy, cfg, source_image, scene["video_prompt"], video_dest, n)
+            except ComfyAPIError as e:
+                print(f"\n  [!] Scene {n} failed: {e}")
+                print(f"  Restart ComfyUI if it crashed, then resume with:")
+                print(f"    python run.py --story-file {os.path.join(output_dir, 'story.json')} --skip-images")
+                raise
 
         video_paths.append(video_dest)
 
