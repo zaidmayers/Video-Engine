@@ -91,9 +91,8 @@ def transcribe_scenes(audio_paths: list[str], output_dir: str, cfg: dict) -> tup
         scenes_data.append({"segments": segments, "time_offset": time_cursor})
         time_cursor += info.duration
 
-    # Merged SRT for the final video
-    merged_srt = os.path.join(output_dir, "final", "captions.srt")
-    os.makedirs(os.path.dirname(merged_srt), exist_ok=True)
+    # Merged SRT for the final video — sits directly in the run folder
+    merged_srt = os.path.join(output_dir, "captions.srt")
     merged_content = build_merged_srt(scenes_data)
     with open(merged_srt, "w", encoding="utf-8") as f:
         f.write(merged_content)

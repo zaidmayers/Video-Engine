@@ -92,8 +92,7 @@ def stitch_final(
         print(f"  [FFmpeg] Mixing audio for scene {i+1}...")
         mixed_paths.append(mix_audio_onto_video(vpath, apath, mixed))
 
-    concat_path = os.path.join(output_dir, "final", "concat.mp4")
-    os.makedirs(os.path.dirname(concat_path), exist_ok=True)
+    concat_path = os.path.join(output_dir, "_concat_tmp.mp4")
     print("  [FFmpeg] Concatenating clips...")
     concatenate_videos(mixed_paths, concat_path)
 

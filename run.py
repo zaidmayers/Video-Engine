@@ -192,8 +192,7 @@ def stage_stitch(cfg: dict, video_paths: list[str], audio_paths: list[str], srt_
     from src.stitcher import stitch_final
 
     title_slug = story["title"].lower().replace(" ", "_")[:40]
-    out_path = os.path.join(cfg["output_dir"], "final", f"{title_slug}.mp4")
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    out_path = os.path.join(cfg["output_dir"], f"{title_slug}.mp4")
 
     stitch_final(video_paths, audio_paths, srt_path, out_path, cfg["output_dir"])
     return out_path
