@@ -22,17 +22,17 @@ story:
   num_scenes: 4
 
 video:
-  width: 768
-  height: 512
+  width: 1920
+  height: 1088           # nearest multiple of 32 to 1080p; low-res pass uses 960x544
   fps: 25
-  duration_seconds: 8    # per scene — low-res 384x256, upscaled to 768x512
+  duration_seconds: 5    # reduced from 8 to avoid OOM at 1080p two-stage
   cfg: 1.0
   steps: 9               # ManualSigmas distilled steps
   seed: 42
 
 image:
-  width: 768
-  height: 512
+  width: 1024
+  height: 576            # 16:9, both multiples of 32
   steps: 4
   guidance: 3.5
   seed: 42
