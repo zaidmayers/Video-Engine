@@ -38,9 +38,8 @@ image:
   seed: 42
 
 tts:
-  voice: "af_heart"
-  speed: 1.0
-  lang: "a"             # 'a' = American English
+  speaker: "Viktor Eka"  # XTTS-v2 built-in male voice
+  lang: "en"
 
 whisper:
   model: "base"

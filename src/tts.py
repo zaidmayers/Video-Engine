@@ -1,46 +1,38 @@
-"""Kokoro TTS: synthesise narration text to WAV files."""
+"""XTTS-v2 TTS: synthesise narration text to WAV files."""
 
 import os
-import re
 
 
-def synthesise(text: str, dest_path: str, cfg: dict) -> str:
-    """Render text to a WAV file using Kokoro. Returns dest_path."""
+def _load_model(cfg: dict):
     try:
-        import soundfile as sf
-        from kokoro import KPipeline
+        import torch
+        from TTS.api import TTS
     except ImportError as e:
         raise ImportError(
-            "Kokoro not installed. Run: pip install kokoro soundfile\n"
+            "Coqui TTS not installed. Run: pip install TTS\n"
             f"Original error: {e}"
         )
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"  [TTS] Loading XTTS-v2 on {device}...")
+    return TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
 
-    voice = cfg["tts"]["voice"]
-    speed = cfg["tts"]["speed"]
+
+def synthesise(text: str, dest_path: str, cfg: dict, tts=None) -> str:
+    """Render text to a WAV file using XTTS-v2. Returns dest_path."""
+    if tts is None:
+        tts = _load_model(cfg)
+
+    speaker = cfg["tts"]["speaker"]
     lang = cfg["tts"]["lang"]
 
-    pipeline = KPipeline(lang_code=lang)
-
-    # Collect all audio chunks
-    audio_chunks = []
-    sample_rate = 24000
-
-    for _, _, audio in pipeline(text, voice=voice, speed=speed):
-        audio_chunks.append(audio)
-
-    if not audio_chunks:
-        raise RuntimeError("Kokoro produced no audio output")
-
-    import numpy as np
-    combined = np.concatenate(audio_chunks)
-
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-    sf.write(dest_path, combined, sample_rate)
+    tts.tts_to_file(text=text, speaker=speaker, language=lang, file_path=dest_path)
     return dest_path
 
 
 def synthesise_scenes(scenes: list[dict], output_dir: str, cfg: dict) -> list[str]:
     """Generate TTS audio for each scene. Returns list of WAV paths."""
+    tts = _load_model(cfg)
     audio_paths = []
     for scene in scenes:
         n = scene["scene_number"]
@@ -48,6 +40,6 @@ def synthesise_scenes(scenes: list[dict], output_dir: str, cfg: dict) -> list[st
         dest = os.path.join(output_dir, f"scene{n:02d}", "narration.wav")
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         print(f"  [TTS] Scene {n}: '{text[:60]}...'")
-        path = synthesise(text, dest, cfg)
+        path = synthesise(text, dest, cfg, tts=tts)
         audio_paths.append(path)
     return audio_paths
