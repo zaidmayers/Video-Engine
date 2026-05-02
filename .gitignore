@@ -1,5 +1,5 @@
 # Generated outputs
-output/
+/output/
 
 # Python cache
 __pycache__/
@@ -32,3 +32,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Claude Code local session state
+.claude/settings.local.json
